@@ -1,6 +1,3 @@
-#
-# jhs_coef.py
-#
 # Evaluates the ionization rate coefficient S (m^-3 s^-1)
 # from Johnson-Hinnov table 2 (MKS units) using bicubic spline interpolation on log-log data.
 #
@@ -57,8 +54,10 @@ def JHS_Coef(Density, Te, create=False, no_null=False):
     Result = np.full_like(Density, 1.0e32)
 
     if no_null:
-        log_Density = np.clip(log_Density, S_tx[0], S_tx[-1])
-        log_Te = np.clip(log_Te, S_ty[0], S_ty[-1])
+        # NOTE: the upper limits of these clip values are NOT the same as in IDL
+        # because the knot locations are in slightly different places
+        log_Density = np.clip(log_Density, S_tx[0] + 0.001, S_tx[-1] - 0.001)
+        log_Te = np.clip(log_Te, S_ty[0] + 0.001, S_ty[-1] - 0.001)
         ok = np.arange(log_Density.size)
     else:
         mask = (

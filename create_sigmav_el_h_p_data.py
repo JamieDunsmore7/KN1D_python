@@ -7,19 +7,12 @@
 
 import numpy as np
 from make_sigma_v import Make_SigmaV
-from sigma_el_p_h import sigma_el_p_h  # Replace if needed with other cross section functions
+from sigma_el_p_h import Sigma_EL_P_H  # Replace if needed with other cross section functions
 
-def create_SIGMAV_EL_H_P_data(sigma_function=sigma_el_p_h,
-                               output_file='sigmav_el_h_p_data.npz'):
+def create_SIGMAV_EL_H_P_data(output_file='sigmav_el_h_p_data.npz'):
     """
-    Generate 2D <sigma*v> table (m^2/s) for elastic collisions of H on P
+    Generate 2D <sigma*v> table (m^2/s) for elastic H-P collisions
     and save as a NumPy .npz file.
-
-    Parameters:
-        sigma_function : callable
-            Function to compute sigma(E) in m^2 from relative energy in eV.
-        output_file : str
-            Path to output .npz file
     """
     mE, nT = 50, 50
     Emin, Emax = 0.1, 2.0e4  # eV
@@ -34,8 +27,7 @@ def create_SIGMAV_EL_H_P_data(sigma_function=sigma_el_p_h,
     SigmaV = np.zeros((mE, nT))
 
     for iT, T in enumerate(T_target):
-        print(f"Processing T = {T:.3g} eV")
-        SigmaV[:, iT] = Make_SigmaV(E_particle, mu_particle, T, mu_target, sigma_function)
+        SigmaV[:, iT] = Make_SigmaV(E_particle, mu_particle, T, mu_target, Sigma_EL_P_H)
 
     ln_E_particle = np.log(E_particle)
     ln_T_target = np.log(T_target)
@@ -47,4 +39,6 @@ def create_SIGMAV_EL_H_P_data(sigma_function=sigma_el_p_h,
         Ln_T_Target=ln_T_target,
         SigmaV=SigmaV
     )
+
+    return
 

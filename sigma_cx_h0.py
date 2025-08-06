@@ -1,6 +1,3 @@
-#+
-# Sigma_cx_H0.py
-#
 # Returns charge exchange cross section for atomic hydrogen. Data are taken
 # either from the polynomial fit in
 #

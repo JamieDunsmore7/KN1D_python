@@ -1,6 +1,3 @@
-#
-# SigmaV_P_H1s_HH.py
-#
 # Returns maxwellian averaged <sigma*v> for electron impact
 # ionization and dissociation of molecular hydrogen (H₂),
 # resulting in one proton and one H(1s) atom.

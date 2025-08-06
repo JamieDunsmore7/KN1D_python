@@ -62,7 +62,6 @@ def Lyman_Alpha(Density, Te, N0, photons=False, create=False, no_null=False):
 
     # R coefficients for level n=2
     r02 = JHR_Coef(Density, Te, Ion=0, p=2, no_null=no_null)
-    print(f"r02: {r02}")
     r12 = JHR_Coef(Density, Te, Ion=1, p=2, no_null=no_null)
 
     # Saha equilibrium densities

@@ -2,12 +2,7 @@ import numpy as np
 
 def kn1d_include(ax, x, xH, xH2, GaugeH2, File=None, HH_label="H₂"):
     """
-    Compute mid‐indices and annotate gauge pressure (and optional filename).
-
-    Returns
-    -------
-    mid, midH, midH2 : lists of int
-        Indices into x, xH, xH2 nearest to each normalized xloc.
+    Compute mid-indices and annotate gauge pressure (and optional filename). Just for plotting I think.
     """
     fig = ax.figure
     x_min, x_max = ax.get_xlim()
@@ -15,7 +10,7 @@ def kn1d_include(ax, x, xH, xH2, GaugeH2, File=None, HH_label="H₂"):
     # normalized positions in [0,1]
     xloc = np.array([.15, .3, .45, .6, .75, .9])
 
-    # map each normalized xloc → data‐coordinate
+    # map each normalized xloc → data-coordinate
     x_data = x_min + xloc * (x_max - x_min)
 
     # find nearest index in each array

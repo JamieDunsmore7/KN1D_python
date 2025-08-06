@@ -1,6 +1,4 @@
-#
-# SigmaV_H1s_H1s_HH.py
-# Returns maxwellian averaged <sigma V) for electron impact
+# Returns maxwellian averaged <sigma V> for electron impact
 # dissociation of molecular hydrogen resulting in two H atoms in
 # the 1s state. Coefficients are taken from Janev, 
 # "Elementary Processes in Hydrogen-Helium Plasmas",
@@ -65,4 +63,4 @@ def SigmaV_H1s_H1s_HH(Te):
     if Te.size == 1:
         result = result[0]
 
-    return result, E0_ave, E0_min, E0_max
+    return result

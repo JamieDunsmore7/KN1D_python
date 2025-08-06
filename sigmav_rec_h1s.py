@@ -1,6 +1,3 @@
-#+
-# SigmaV_rec_H1s.py
-#
 # Returns maxwellian averaged <sigma V) for electron-ion radiative
 # recombination to the atomic hydrogen in the 1s state.
 # Coefficients are taken from Janev, "Elementary Processes in Hydrogen-Helium Plasmas",

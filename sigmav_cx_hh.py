@@ -1,5 +1,3 @@
-# SigmaV_cx_HH.pro
-#
 # Returns maxwellian averaged <sigma V> for charge exchange of molecular
 # hydrogen. Coefficients are taken
 # from Janev, "Elementary Processes in Hydrogen-Helium Plasmas",
@@ -85,12 +83,6 @@ def SigmaV_CX_HH(T, E):
     for n in range(9):
         for m in range(9):
             result += alpha[n, m] * (logE ** n) * (logT ** m)
-            if n==0 and m==2:
-                print(f"n={n}")
-                print(f"m={m}")
-                print('logE:', logE)
-                print('logT:', logT)
-                print('result:', result)
 
     result = np.exp(result) * 1e-6
 

@@ -1,19 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.transforms import blended_transform_factory
 
 def kn1d_limiter_include(ax, xlimiter, xsep):
     """
-    Draws the limiter‐SOL‐CORE schematic at the bottom of the panel
+    Just for plotting purposes.
+    Draws the limiter-SOL-CORE schematic at the bottom of the panel
     and vertical dashed lines at xlimiter and xsep.
 
     Parameters
     ----------
     ax : matplotlib Axes
     xlimiter : float
-        Data‐coordinate of the limiter.
+        Data-coordinate of the limiter.
     xsep : float
-        Data‐coordinate of the separatrix.
+        Data-coordinate of the separatrix.
     """
 
     fig = ax.figure

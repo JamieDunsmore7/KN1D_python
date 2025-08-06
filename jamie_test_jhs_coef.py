@@ -1,8 +1,4 @@
-#
-# test_jhs.py
-#
 # Test and plot Johnson-Hinnov S coefficients by calling JHS_Coef.
-#
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -32,5 +28,5 @@ plt.xlim([1, 1000])
 plt.ylim([1e-11, 1e-7])
 plt.grid(True)
 plt.legend()
-plt.title('JHS Coefficient: Ionisation')
+plt.title('JHS Coefficient (ionisation)')
 plt.show()

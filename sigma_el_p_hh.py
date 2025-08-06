@@ -1,6 +1,3 @@
-# Sigma_EL_P_HH.pro
-#
-#
 # Returns momentum transfer cross section for elastic collisions of H+ onto H2 
 # for specified energy of H+. Data are taken from 
 # 

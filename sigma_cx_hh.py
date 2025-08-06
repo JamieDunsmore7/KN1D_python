@@ -1,6 +1,3 @@
-#+
-# Sigma_cx_HH.pro
-#
 # Returns charge exchange cross section for molecular hydrogen. Data are taken
 # the polynomial fit in
 #

@@ -6,23 +6,15 @@
 
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
-from sigma_el_p_hh import Sigma_EL_P_HH  # Replace if needed with other cross section functions
+from sigma_el_p_hh import Sigma_EL_P_HH
 from make_sigma_v import Make_SigmaV
-from spline_helper_functions import save_rbspline
 import os
 
 
-def create_SIGMAV_EL_H2_P_bscoef(sigma_function = Sigma_EL_P_HH, output_file='sigmav_el_h2_p_bscoef.npz'):
+def create_SIGMAV_EL_H2_P_bscoef(output_file='sigmav_el_h2_p_bscoef.npz'):
     """
     Creates a .npz file storing B-spline coefficients for log10-interpolated
     <sigma*v> values for elastic H2 on P collisions.
-
-    Parameters:
-        make_sigmaV_func : callable
-            Function to compute sigma(E) in m^2 from relative energy in eV.
-
-        output_file : str
-            Path to output file.
     """
     # Log-spaced energy and temperature arrays
     mE = 5
@@ -36,12 +28,11 @@ def create_SIGMAV_EL_H2_P_bscoef(sigma_function = Sigma_EL_P_HH, output_file='si
     mu_particle = 2.0
     mu_target = 1.0
 
-      # Allocate array for <sigma*v>
+    # Allocate array for <sigma*v>
     SigmaV = np.zeros((mE, nT))
 
     for iT, T in enumerate(T_target):
-        print(f"Processing T = {T:.3g} eV")
-        SigmaV[:, iT] = Make_SigmaV(E_particle, mu_particle, T, mu_target, sigma_function)
+        SigmaV[:, iT] = Make_SigmaV(E_particle, mu_particle, T, mu_target, Sigma_EL_P_HH)
 
     # Convert axes to log scale
     logE_particle = np.log(E_particle)
@@ -49,9 +40,21 @@ def create_SIGMAV_EL_H2_P_bscoef(sigma_function = Sigma_EL_P_HH, output_file='si
     LogSigmaV_EL_H2_P = np.log(SigmaV)
 
     # Compute B-spline coefficients
-    print("Computing B-Spline coefficients...")
     order = 4
 
     spline = RectBivariateSpline(logE_particle, logT_target, LogSigmaV_EL_H2_P, kx=order - 1, ky=order - 1)
-    save_rbspline(output_file, spline)
-    print(f"Spline saved to {output_file}")
+    spline_tx, spline_ty, spline_c = spline.tck
+    spline_kx, spline_ky = spline.degrees
+
+    np.savez(output_file,
+             tx=spline_tx,
+             ty=spline_ty,
+             c=spline_c,
+             kx=spline_kx,
+             ky=spline_ky,
+             )
+    
+    print(f"Data saved to {output_file}")
+
+    return
+

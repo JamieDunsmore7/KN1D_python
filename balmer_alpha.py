@@ -24,7 +24,7 @@ def Balmer_Alpha(Density, Te, N0, photons=False, create=False, no_null=False):
     Parameters
     ----------
     Density : ndarray
-        Electron (and proton) density in m^-3
+        Electron (=hydrogen ion) density in m^-3
     Te : ndarray
         Electron temperature in eV
     N0 : ndarray
@@ -59,7 +59,7 @@ def Balmer_Alpha(Density, Te, N0, photons=False, create=False, no_null=False):
     A_Balmer = data["A_balmer"]
 
     # Preallocate result arrays
-    result = np.full_like(Density, 1.0e32)
+    result = np.full_like(Density, 1.0e32) 
     photons_array = np.full_like(Density, 1.0e32)
 
     # Evaluate R coefficients

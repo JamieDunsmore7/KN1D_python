@@ -1,20 +1,20 @@
 #
 # Interp_fVrVxX.py
 #
-# Interpolates distribution functions used by Kinetic_Neutrals.py,
-# Kinetic_H.py, Kinetic_H2.py, and other related procedures.
+# Interpolates distribution functions used by Kinetic_H.py, Kinetic_H2.py, 
+# and other procedures.
 #
 
 import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
+from make_dvr_dvx import make_dvr_dvx
 
 
 
 def Interp_fVrVxX(
     fa, vra, vxa, xa, Tnorma,
-    vrb, vxb, xb, Tnormb,
-    make_dvr_dvx_fn, debug=False,
+    vrb, vxb, xb, Tnormb, debug=False,
     correct=True
 ):
     """
@@ -100,23 +100,33 @@ def Interp_fVrVxX(
 
 
 
-    # Determine valid interpolation indices (error if completely out of bounds)
-    i0, i1 = np.searchsorted(vra, vrb_rescaled[0]), np.searchsorted(vra, vrb_rescaled[-1], side='right') - 1
-    j0, j1 = np.searchsorted(vxa, vxb_rescaled[0]), np.searchsorted(vxa, vxb_rescaled[-1], side='right') - 1
-    k0, k1 = np.searchsorted(xa, xb[0]), np.searchsorted(xa, xb[-1], side='right') - 1
+    # find all indices of vrb_rescaled within [vra.min(), vra.max()]
+    ok_i = np.where((vrb_rescaled >= vra.min()) & (vrb_rescaled <= vra.max()))[0]
+    if ok_i.size < 1:
+        raise ValueError("No values of Vrb are within range of Vra")
+    i0, i1 = int(ok_i[0]), int(ok_i[-1])
 
-    if i1 < i0 or j1 < j0 or k1 < k0:
-        raise ValueError("Target grid out of bounds of source grid.")
+    # same for vxb_rescaled vs. vxa
+    ok_j = np.where((vxb_rescaled >= vxa.min()) & (vxb_rescaled <= vxa.max()))[0]
+    if ok_j.size < 1:
+        raise ValueError("No values of Vxb are within range of Vxa")
+    j0, j1 = int(ok_j[0]), int(ok_j[-1])
 
-    if (i1 - i0) < 2 or (j1 - j0) < 2 or (k1 - k0) < 2:
-        raise ValueError("No overlap between fa and fb grids")
+    # and for the spatial grid xb vs xa (no fV scaling here)
+    ok_k = np.where((xb >= xa.min()) & (xb <= xa.max()))[0]
+    if ok_k.size < 1:
+        raise ValueError("No values of Xb are within range of Xa")
+    k0, k1 = int(ok_k[0]), int(ok_k[-1])
+
+    # Then we can still check for a minimal amount of overlap:
+    if (i1 - i0) < 1 or (j1 - j0) < 1 or (k1 - k0) < 1:
+        raise ValueError("Not enough overlap between source and target grids")
+
 
     fb = np.zeros((nvrb, nvxb, nxb), dtype=float)
 
-
-    # Compute velocity-space differential elements
-    Vr2pidVra, _, dVxa, vraL, vraR, vxaL, vxaR, Vra2Vxa2, *_ = make_dvr_dvx_fn(vra, vxa)
-    Vr2pidVrb, _, dVxb, vrbL, vrbR, vxbL, vxbR, Vol, Vth_DVx, Vx_DVx, Vr_DVr, Vrb2Vxb2, jpa, jpb, jna, jnb = make_dvr_dvx_fn(vrb, vxb)
+    Vr2pidVra, VrVr4pidVra, dVxa, vraL, vraR, vxaL, vxaR, _, _, _, _, Vra2Vxa2, _, _, _, _ = make_dvr_dvx(vra, vxa)
+    Vr2pidVrb, VrVr4pidVrb, dVxb, vrbL, vrbR, vxbL, vxbR, Vol, Vth_DVx, Vx_DVx, Vr_DVr, Vrb2Vxb2, jpa, jpb, jna, jnb = make_dvr_dvx(vrb, vxb)
 
     # Assume weight must be recomputed (full caching logic omitted for now)
     weight = None
@@ -126,7 +136,6 @@ def Interp_fVrVxX(
 
     # Skip all the stuff from the IDL about checking for pre-computed weights.
     # Doesn't change anything, may just speed things up a bit.
-
 
     # Set area contributions to Weight array
     _weight = np.zeros((nvrb, nvxb, nvra, nvxa))
@@ -148,11 +157,10 @@ def Interp_fVrVxX(
                             / (Vr2pidVrb[ib] * dVxb[jb])
                         )
 
-    # Flatten the 4D weight array to 2D: (nvrb*nvxb, nvra*nvxa)
-    weight[:] = _weight.reshape(nvrb * nvxb, nvra * nvxa)
+    weight[:] = _weight.reshape(nvrb * nvxb, nvra * nvxa, order= 'F')
 
     # --- Interpolate in X: from source fa -> intermediate fb_xa ---
-    _fa = fa.reshape(nvra * nvxa, nxa)  # Flatten velocity dimensions for matrix multiplication
+    _fa = fa.reshape(nvra * nvxa, nxa, order = 'F')  # Flatten velocity dimensions for matrix multiplication
     fb_xa = weight @ _fa  # fb_xa has shape (nvrb * nvxb, nxa)
 
     # Compute _Wxa and _Ea - these are the desired moments of fb, but on the xa grid
@@ -168,11 +176,10 @@ def Interp_fVrVxX(
                 * np.sum(Vr2pidVra[:, None] * fa_k * (vxa[None, :] * dVxa[None, :]))
                 / na[k]
             )
-            _Ea[k] = (
-                Tnorma
-                * np.sum(Vr2pidVra[:, None] * Vra2Vxa2[:, None] * fa_k * dVxa[None, :])
-                / na[k]
-            )
+
+            # fa_k has shape (nvr, nvx)
+            integrand = Vr2pidVra[:,None] * (Vra2Vxa2 * fa_k) * dVxa[None,:]
+            _Ea[k] = Tnorma * integrand.sum() / na[k]
 
     # Interpolate in x to get fb from fb_xa and to get Wxa, Ea from _Wva, _Ea
     Wxa = np.zeros(nxb)
@@ -185,14 +192,13 @@ def Interp_fVrVxX(
         kR = kL + 1
         f = (xb[k] - xa[kL]) / (xa[kR] - xa[kL])
         fb[:, :, k] = (
-            fb_xa[:, kL].reshape(nvrb, nvxb)
-            + f * (fb_xa[:, kR].reshape(nvrb, nvxb) - fb_xa[:, kL].reshape(nvrb, nvxb))
+            fb_xa[:, kL].reshape(nvrb, nvxb, order='F')
+            + f * (fb_xa[:, kR].reshape(nvrb, nvxb, order='F') - fb_xa[:, kL].reshape(nvrb, nvxb, order='F'))
         )
         Wxa[k] = _Wxa[kL] + f * (_Wxa[kR] - _Wxa[kL])
         Ea[k] = _Ea[kL] + f * (_Ea[kR] - _Ea[kL])
 
     # Correct fb so that it has the same Wx and E moments as fa
-
     if correct == True:
         AN = np.zeros((nvrb, nvxb, 2))
         BN = np.zeros((nvrb, nvxb, 2))
@@ -205,7 +211,7 @@ def Interp_fVrVxX(
             if nb > 0:
                 while True:
                     nb = np.sum(Vr2pidVrb[:, None] * fb[:, :, k] * dVxb[None, :])
-                    Wxb = np.sqrt(Tnormb) * np.sum(Vr2pidVrb[:, None] * fb[:, :, k] * (Vxb[None, :] * dVxb[None, :])) / nb
+                    Wxb = np.sqrt(Tnormb) * np.sum(Vr2pidVrb[:, None] * fb[:, :, k] * (vxb[None, :] * dVxb[None, :])) / nb
                     Eb = Tnormb * np.sum(Vr2pidVrb[:, None] * Vrb2Vxb2 * fb[:, :, k] * dVxb[None, :]) / nb
 
                     Nij = np.zeros((nvrb + 2, nvxb + 2))
@@ -253,12 +259,13 @@ def Interp_fVrVxX(
                     TB1 = np.zeros(2)
                     TB2 = np.zeros(2)
 
+
                     for ia in range(2):
-                        TA1 = np.sqrt(Tnormb) * np.sum(AN[:, :, ia] * Vxb[None, :])
+                        TA1 = np.sqrt(Tnormb) * np.sum(AN[:, :, ia] * vxb[None, :])
                         TA2 = Tnormb * np.sum(Vrb2Vxb2 * AN[:, :, ia])
                         for ib in range(2):
                             if TB1[ib] == 0.0:
-                                TB1[ib] = np.sqrt(Tnormb) * np.sum(BN[:, :, ib] * Vxb[None, :])
+                                TB1[ib] = np.sqrt(Tnormb) * np.sum(BN[:, :, ib] * vxb[None, :])
                             if TB2[ib] == 0.0:
                                 TB2[ib] = Tnormb * np.sum(Vrb2Vxb2 * BN[:, :, ib])
 
@@ -268,11 +275,13 @@ def Interp_fVrVxX(
                                 beta = (TA2 * (Wxa[k] - Wxb) - TA1 * (Ea[k] - Eb)) / denom
                                 alpha = (Wxa[k] - Wxb - TB1[ib] * beta) / TA1
 
+                            print('k = ', k)
                             if alpha * sgn[ia] > 0.0 and beta * sgn[ib] > 0.0:
                                 RHS = AN[:, :, ia] * alpha + BN[:, :, ib] * beta
                                 break
                         else:
                             continue
+
                         break
 
                     s = 1.0
@@ -288,7 +297,6 @@ def Interp_fVrVxX(
     
     # --- Rescale to conserve density ---
     tot_a = np.array([np.sum(Vr2pidVra[:, None] * fa[:, :, k] * dVxa[None, :]) for k in range(nxa)])
-    from scipy.interpolate import interp1d
     interp_tot_a = interp1d(xa, tot_a, kind='linear', bounds_error=False, fill_value='extrapolate')
     tot_b = interp_tot_a(xb[k0:k1+1])
 
@@ -333,6 +341,8 @@ def Interp_fVrVxX(
         plt.plot(xa, na, label='na')
         plt.plot(xb, nb_arr, label='nb')
         plt.title('Density conserved')
+        plt.xlim([0, 0.02])
+        plt.ylim([0,41])
         plt.legend()
         plt.show()
 
@@ -340,6 +350,8 @@ def Interp_fVrVxX(
         plt.plot(xa, Uxa, label='Uxa')
         plt.plot(xb, Uxb, label='Uxb')
         plt.title('Ux conserved')
+        plt.xlim([0, 0.02])
+        plt.ylim([0,10000])
         plt.legend()
         plt.show()
 
@@ -347,7 +359,11 @@ def Interp_fVrVxX(
         plt.plot(xa, Ta, label='Ta')
         plt.plot(xb, Tb, label='Tb')
         plt.title('T conserved')
+        plt.xlim([0, 0.02])
+        plt.ylim([0, 6])
         plt.legend()
         plt.show()
+
+
 
     return fb

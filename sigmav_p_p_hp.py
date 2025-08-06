@@ -1,6 +1,3 @@
-#
-# SigmaV_P_P_HP.py
-#
 # Returns Maxwellian-averaged <sigma*v> for electron impact
 # dissociation of molecular hydrogen ions resulting in two protons.
 # Coefficients are taken from Janev,

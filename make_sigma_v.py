@@ -53,7 +53,7 @@ def Make_SigmaV(E_particle, mu_particle, T_target, mu_target, sigma_function):
     E_rel = 0.5 * (vth * vth * Vrel * Vrel) * mu_particle * mH / q
 
     # Get sigma(E_rel), same shape as Vrel
-    sig = sigma_function(E_rel) # rememer this sigma function is passed into the function
+    sig = sigma_function(E_rel) # remember this sigma function is passed into the function
 
     # Compute sigma*v averaged over Maxwellian target
     sigma_v = np.zeros(nvxa)

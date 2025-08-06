@@ -1,3 +1,5 @@
+# NOTE: not part of the core IDL code
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import bisplev
@@ -8,10 +10,6 @@ data = np.load(output_file, allow_pickle=True)
 
 S_tck     = (data['S_tx'],     data['S_ty'],     data['S_c'],     int(data['S_kx']),     int(data['S_ky']))
 alpha_tck = (data['alpha_tx'], data['alpha_ty'], data['alpha_c'], int(data['alpha_kx']), int(data['alpha_ky']))
-
-
-#S_tck = data['S_tck']
-#alpha_tck = data['alpha_tck']
 
 # example density values
 dens = np.array([10**12, 10**13, 10**14]) # in cm^-3

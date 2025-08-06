@@ -1,6 +1,3 @@
-#+
-# SigmaV_EL_H_P.pro
-#
 #  Evaluates the elastic scattering (momentum transfer) <sigma v> for
 #  H  atoms with energy E impacting on protons with temperature T.
 #
@@ -14,7 +11,7 @@
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
 from scipy.ndimage import map_coordinates # should match the idl interpolate function
-from spline_helper_functions import load_rbspline
+from scipy.interpolate import bisplev
 
 
 def SigmaV_EL_H_P(T, E, use_bspline=True):
@@ -54,8 +51,23 @@ def SigmaV_EL_H_P(T, E, use_bspline=True):
 
 
     if use_bspline:
-        spline = load_rbspline("sigmav_el_h_p_bscoef.npz")
-        result = np.exp(spline.ev(LEP, LTH))
+
+        try:
+            spline = np.load("sigmav_el_h_p_bscoef.npz")
+        except FileNotFoundError:
+            raise FileNotFoundError("Could not find sigmav_el_h_p_bscoef.npz. Run create_sigmav_el_h_p_bscoef.py first.")
+        
+        tx = spline["tx"]
+        ty = spline["ty"]
+        c = spline["c"]
+        kx = int(spline["kx"])
+        ky = int(spline["ky"])
+        tck = (tx, ty, c, kx, ky)
+
+        # Ugly fudge because bisplev only evaluates pointwise
+        pts = [bisplev(xi, yi, tck) for xi, yi in zip(LEP.flatten(), LTH.flatten())]
+        result = np.exp(np.array(pts).reshape(LEP.shape) )
+
 
     else:
         # Load tabulated data
@@ -78,9 +90,3 @@ def SigmaV_EL_H_P(T, E, use_bspline=True):
 
     return result
 
-if __name__ == "__main__":
-    # Demo usage
-    E_test = np.logspace(-1, 4, 100)
-    T_test = np.logspace(-1, 4, 100)
-    sigma_v_vals = SigmaV_EL_H_P(E_test, T_test)
-    print(sigma_v_vals)

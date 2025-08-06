@@ -1,5 +1,3 @@
-# jamie_test_lyman_alpha.py
-#
 # Test and plot Lyman-alpha emissivity by calling Lyman_Alpha.
 
 import numpy as np

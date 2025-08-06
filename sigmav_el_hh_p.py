@@ -1,6 +1,3 @@
-#+
-# SigmaV_EL_HH_P.py
-#
 #  Evaluates the elastic scattering (momentum transfer) <sigma v> for
 #  H2 molecules with energy E impacting on protons with temperature T.
 #
@@ -13,7 +10,9 @@
 
 import numpy as np
 from scipy.interpolate import bisplev, RectBivariateSpline
-from scipy.ndimage import map_coordinates # should match the idl interpolate function
+from scipy.ndimage import map_coordinates
+
+from sigmav_el_h_p import SigmaV_EL_H_P # should match the idl interpolate function
 
 
 
@@ -53,20 +52,25 @@ def SigmaV_EL_HH_P(T, E, use_bspline=True):
     LTH2 = np.log(_T)
 
     if use_bspline:
-        # Load B-spline coefficient data
-        data = np.load("sigmav_el_h2_p_bscoef.npz")
-        tx = data["EKnot_EL_H2_P"]
-        ty = data["TKnot_EL_H2_P"]
-        c = data["LogSigmaV_EL_H2_P_BSCoef"]
-        k = int(data["order_EL_H2_P"])
 
+        try:
+            spline = np.load("sigmav_el_h2_p_bscoef.npz")
+        except FileNotFoundError:
+            raise FileNotFoundError("Could not find sigmav_el_h2_p_bscoef.npz. Run create_sigmav_el_h_p_bscoef.py first.")
+        
+        tx = spline["tx"]
+        ty = spline["ty"]
+        c = spline["c"]
+        kx = int(spline["kx"])
+        ky = int(spline["ky"])
+        tck = (tx, ty, c, kx, ky)
 
-        # Clamp logE and logT to knot range
         LEP = np.clip(LEP, np.min(tx), np.max(tx))
         LTH2 = np.clip(LTH2, np.min(ty), np.max(ty))
 
-        # Evaluate B-spline on 2D grid
-        result = np.exp(bisplev(LEP, LTH2, (tx, ty, c, k, k)))
+        # Ugly fudge because bisplev only evaluates pointwise
+        pts = [bisplev(xi, yi, tck) for xi, yi in zip(LEP.flatten(), LTH2.flatten())]
+        result = np.exp(np.array(pts).reshape(LEP.shape))
 
     else:
         # Load tabulated data

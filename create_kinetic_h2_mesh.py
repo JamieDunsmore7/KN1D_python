@@ -2,7 +2,7 @@
 # create_kinetic_h2_mesh.py
 #
 # Python translation of Create_Kinetic_H2_Mesh.pro
-# Computes spatial mesh and related quantities for kinetic H₂ neutral modeling.
+# Computes spatial mesh and related quantities for kinetic_h2.py
 #
 
 import numpy as np
@@ -15,6 +15,33 @@ from create_vrvxmesh import Create_VrVxMesh
 
 
 def Create_Kinetic_H2_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
+    '''
+    INPUT:
+    nv      - integer, number of desired elements in vr mesh
+    mu      - float, 2 for deuterium, 1 for hydrogen
+    x       - array, initial spatial grid
+    Ti      - array, ion temperature profile (on the x grid)
+    Te      - array, electron temperature profile (on the x grid)
+    n       - array, density profile (on the x grid)
+    PipeDia - array, pipe diameter profile (on the x grid)
+    fctr    - float, factor to scale the maximum grid spacing
+    E0_in   - array, energy where a velocity bin is desired (optional)
+
+    OUTPUT:
+    result  - dictionary containing:
+        xH2       - array, spatial grid for H2
+        TiH2      - array, ion temperature profile on xH2 grid
+        TeH2      - array, electron temperature profile on xH2 grid
+        neH2      - array, electron density profile on xH2 grid
+        PipeDiaH2 - array, pipe diameter profile on xH2 grid
+        vx       - array, vx grid
+        vr       - array, vr grid
+        Tnorm    - float, optimum normalization temperature
+        E0       - energy where a velocity bin is desired (if provided)
+        ixE0     - indices of vx corresponding to E0
+        irE0     - index of vr corresponding to E0
+    '''
+
     mH = 1.6726231e-27
     q = 1.602177e-19
     k_boltz = 1.380658e-23
@@ -22,6 +49,7 @@ def Create_Kinetic_H2_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
     v0_bar = np.sqrt(8.0 * Twall * q / (np.pi * 2 * mu * mH))
 
     nx = len(x)
+
 
     # Estimate total reaction rate for destruction of molecules and for interation with side walls
     RR = (
@@ -51,7 +79,7 @@ def Create_Kinetic_H2_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
     PipeDiafine = interp1d(x, PipeDia, bounds_error=False, fill_value='extrapolate')(xfine)
 
     # Setup a vx,vr mesh based on raw data to get typical vx, vr values
-    vx, vr, Tnorm, E0, ixE0, irE0 = Create_VrVxMesh(nv, Tifine, E0=E0_in)
+    vx, vr, Tnorm, ixE0, irE0 = Create_VrVxMesh(nv, Tifine, E0=E0_in)
     vth = np.sqrt(2 * q * Tnorm / (mu * mH))
 
     # Estimate interaction rate with side walls
@@ -68,33 +96,31 @@ def Create_Kinetic_H2_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
         + 0.1 * nfine * SigmaV_CX_HH(Tifine, Tifine)
         + gamma_wall
     )
-
     # Compute local maximum grid spacing from dx_max = 2 min(vr) / RR
     big_dx = 0.02 * fctr
     dx_max = np.minimum(fctr * 0.8 * (2 * vth * np.min(vr) / RR), big_dx)
 
-    # Construct xH2 axis
-    xH2 = [xmaxH2]
+    pts = [xmaxH2]
     xpt = xmaxH2
+    interp_dx = interp1d(xfine, dx_max, bounds_error=False, fill_value="extrapolate")
     while xpt > xminH2:
-        interp_dx = interp1d(xfine, dx_max, bounds_error=False, fill_value='extrapolate')
+        # prepend
+        pts = [xpt] + pts
+
         dx1 = interp_dx(xpt)
-        xpt_test = xpt - dx1
-        dx2 = dx1
-        if xpt_test > xminH2:
-            dx2 = interp_dx(xpt_test)
-        dx = min(dx1, dx2)
-        xpt -= dx
-        if xpt >= xminH2:
-            xH2.append(xpt)
-    xH2 = np.array([xminH2] + xH2[::-1][:-1])
+        test = xpt - dx1
+        dx2 = interp_dx(test) if test > xminH2 else dx1
+        xpt -= min(dx1, dx2)
+
+    xH2 = np.array([xminH2] + pts[:-1])
+
 
     TiH2 = interp1d(xfine, Tifine, bounds_error=False, fill_value='extrapolate')(xH2)
     TeH2 = interp1d(xfine, Tefine, bounds_error=False, fill_value='extrapolate')(xH2)
     neH2 = interp1d(xfine, nfine, bounds_error=False, fill_value='extrapolate')(xH2)
     PipeDiaH2 = interp1d(xfine, PipeDiafine, bounds_error=False, fill_value='extrapolate')(xH2)
 
-    vx, vr, Tnorm, E0, ixE0, irE0 = Create_VrVxMesh(nv, TiH2, E0=E0_in)
+    vx, vr, Tnorm, ixE0, irE0 = Create_VrVxMesh(nv, TiH2, E0=E0_in)
 
     result = {
         "xH2": xH2,
@@ -105,7 +131,7 @@ def Create_Kinetic_H2_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
         "vx": vx,
         "vr": vr,
         "Tnorm": Tnorm,
-        "E0": E0,
+        "E0": E0_in,
         "ixE0": ixE0,
         "irE0": irE0,
     }

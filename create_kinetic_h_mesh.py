@@ -2,25 +2,51 @@
 # create_kinetic_h_mesh.py
 #
 # Python translation of Create_Kinetic_H_Mesh.pro
-# Computes spatial mesh and related quantities for kinetic neutral modeling.
+# Computes spatial mesh for kinetic_h.py
 #
 
 import numpy as np
-from dataclasses import dataclass
 from scipy.interpolate import interp1d
 from create_vrvxmesh import Create_VrVxMesh
 from jhs_coef import JHS_Coef
 from sigmav_cx_h0 import SigmaV_CX_H0
+from sigmav_ion_h0 import SigmaV_Ion_H0
 
 
 def Create_Kinetic_H_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
+    '''
+    INPUT:
+    nv      - integer, number of desired elements in vr mesh
+    mu      - float, 2 for deuterium, 1 for hydrogen
+    x       - array, initial spatial grid
+    Ti      - array, ion temperature profile (on the x grid)
+    Te      - array, electron temperature profile (on the x grid)
+    n       - array, density profile (on the x grid)
+    PipeDia - array, pipe diameter profile (on the x grid)
+    fctr    - float, factor to scale the maximum grid spacing
+    E0_in   - array, energy where a velocity bin is desired (optional)
+
+    OUTPUT:
+    result  - dictionary containing:
+        xH       - array, spatial grid for hydrogen
+        TiH      - array, ion temperature profile on xH grid
+        TeH      - array, electron temperature profile on xH grid
+        neH      - array, electron density profile on xH grid
+        PipeDiaH - array, pipe diameter profile on xH grid
+        vx       - array, vx grid
+        vr       - array, vr grid
+        Tnorm    - float, optimum normalization temperature
+        E0       - energy where a velocity bin is desired (if provided)
+        ixE0    - indices of vx corresponding to E0
+        irE0    - index of vr corresponding to E0
+    '''
     
     mH = 1.6726231e-27
     q = 1.602177e-19
     nx = len(x)
 
     # Estimate total reaction rate for destruction of hydrogen atoms and for interation with side walls
-    RR = n * JHS_Coef(n, Te)
+    RR = n * SigmaV_Ion_H0(Te)
 
     v0 = np.sqrt(2 * 10 * q / (mu * mH)) # Set v0 to thermal speed of 10 eV neutral
 
@@ -45,7 +71,7 @@ def Create_Kinetic_H_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
     PipeDiafine = interp1d(x, PipeDia, bounds_error=False, fill_value='extrapolate')(xfine)
 
     # Setup a vx,vr mesh based on raw data to get typical vx, vr values
-    vx, vr, Tnorm, E0, ixE0, irE0 = Create_VrVxMesh(nv, Tifine, E0=E0_in)
+    vx, vr, Tnorm, ixE0, irE0 = Create_VrVxMesh(nv, Tifine, E0=E0_in)
     vth = np.sqrt(2 * q * Tnorm / (mu * mH))
     minVr = np.min(vr)
     minE0 = 0.5 * mH * (minVr * vth)**2 / q
@@ -57,36 +83,31 @@ def Create_Kinetic_H_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
             gamma_wall[k] = 2 * np.max(vr) * vth / PipeDiafine[k]
 
     # Estimate total reaction rate, including charge exchange and elastic scattering, and interaction with side walls
-    RR = nfine * JHS_Coef(nfine, Tefine) + nfine * SigmaV_CX_H0(Tifine, np.full_like(xfine, minE0)) + gamma_wall
+    RR = nfine * JHS_Coef(nfine, Tefine, no_null=True) + nfine * SigmaV_CX_H0(Tifine, np.full_like(xfine, minE0)) + gamma_wall
 
     # Compute local maximum grid spacing from dx_max = 2 min(vr) / RR
     big_dx = 0.02 * fctr
     dx_max = np.minimum(fctr * 0.8 * (2 * vth * np.min(vr) / RR), big_dx)
 
     # Construct xH axis
-    xH = [xmaxH]
+    pts = [xmaxH]
     xpt = xmaxH
+    interp_dx = interp1d(xfine, dx_max, bounds_error=False, fill_value='extrapolate')
     while xpt > xminH:
-        interpdx = interp1d(xfine, dx_max, bounds_error=False, fill_value='extrapolate')
-        dx1 = interpdx(xpt)
-        xpt_test = xpt - dx1
-        dx2 = dx1
-        if xpt_test > xminH:
-            dx2 = interpdx(xpt_test)
-        dx = min(dx1, dx2)
-        xpt -= dx
-        if xpt >= xminH:
-            xH.append(xpt)
-    xH = np.array([xminH] + xH[::-1][:-1])
+        pts = [xpt] + pts
+        dx1 = interp_dx(xpt)
+        test = xpt - dx1
+        dx2 = interp_dx(test) if test > xminH else dx1
+        xpt -= min(dx1, dx2)
+
+    xH = np.array([xminH] + pts[:-1])
 
     TiH = interp1d(xfine, Tifine, bounds_error=False, fill_value='extrapolate')(xH)
     TeH = interp1d(xfine, Tefine, bounds_error=False, fill_value='extrapolate')(xH)
     neH = interp1d(xfine, nfine, bounds_error=False, fill_value='extrapolate')(xH)
     PipeDiaH = interp1d(xfine, PipeDiafine, bounds_error=False, fill_value='extrapolate')(xH)
 
-    vx, vr, Tnorm, E0, ixE0, irE0 = Create_VrVxMesh(nv, TiH, E0=E0_in)
-
-    # return results as a dictionary
+    vx, vr, Tnorm, ixE0, irE0 = Create_VrVxMesh(nv, TiH, E0=E0_in)
 
     result = {
         'xH': xH,
@@ -97,7 +118,7 @@ def Create_Kinetic_H_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=1.0, E0_in=None):
         'vx': vx,
         'vr': vr,
         'Tnorm': Tnorm,
-        'E0': E0,
+        'E0': E0_in,
         'ixE0': ixE0,
         'irE0': irE0
     }

@@ -1,8 +1,7 @@
 #Make_dVr_dVx.py
 #
 #   Constructs velocity space differentials for distribution functions
-# used by Kinetic_Neutrals.pro, Kinetic_H2.pro, Kinetic_H2.pro, and other 
-# related procedures.
+# used by Kinetic_H2.pro, Kinetic_H2.pro, and other procedures.
 #
 #   03/25/2004 Bug in computation of Vr2pidVr and VrVr4pidVr found by Jerry Hughes and corrected
           
@@ -60,15 +59,12 @@ def make_dvr_dvx(vr, vx):
     # — 6) dVx is the width of each vx bin:
     dVx = vxR - vxL
 
-
     # --- volume elements vol[i,j] = Vr2pidVr[i] * dVx[j] ---
     vol = Vr2pidVr[:, None] * dVx[None, :] # TODO: check that this is correct translation of the idl code
 
     # --- delta arrays ---
     Deltavx = vxR - vxL
     Deltavr = vrR - vrL
-
-    # CHECK THE FOLLOWING SECTION: I AM NOT SURE THAT IT IS CORRCECT!!
 
     # padded arrays of shape (nvr+2, nvx+2)
     vth_DeltaVx = np.zeros((nvr+2, nvx+2), float)

@@ -1,6 +1,3 @@
-#
-# SigmaV_H1s_Hn_HP.py
-#
 # Returns maxwellian averaged <sigma V) for electron impact
 # dissociative recombination of molecular hydrogen ions resulting in 
 # one H atom in the 1s state and one H atom in state n > or = 2. Coefficients 

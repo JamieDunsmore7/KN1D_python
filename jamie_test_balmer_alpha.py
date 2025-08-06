@@ -1,5 +1,3 @@
-# jamie_test_balmer_alpha.py
-#
 # Test and plot Balmer-alpha emissivity by calling Balmer_Alpha.
 
 import numpy as np
@@ -12,7 +10,7 @@ Te_const   = np.full_like(densities, 20.0)
 N0_const   = np.full_like(densities, 3.3e16)
 
 # Compute and print
-bal_dens = Balmer_Alpha(densities, Te_const, N0_const)
+bal_dens = Balmer_Alpha(densities, Te_const, N0_const, no_null=True)
 print("=== Density scan (Te=20 eV, N0=3.3e16 m⁻³) ===")
 print("densities (m^-3):", densities)
 print("Balmer-α emissivity (W/m^3):", bal_dens)
@@ -25,7 +23,7 @@ plt.xlabel('Density (m⁻³)')
 plt.ylabel('Balmer-α emissivity (W m⁻³)')
 plt.grid(True, which='both', ls='--')
 plt.xlim([1e16, 1e21])
-plt.ylim([0.1, 1e5])
+plt.ylim([0.1, 1e4])
 plt.tight_layout()
 plt.show()
 
@@ -36,7 +34,7 @@ dens_const = np.full_like(Te_vals, 1.0e19)
 N0_const2  = np.full_like(Te_vals, 3.3e16)
 
 # Compute and print
-bal_Te = Balmer_Alpha(dens_const, Te_vals, N0_const2)
+bal_Te = Balmer_Alpha(dens_const, Te_vals, N0_const2, no_null=True)
 print("\n=== Te scan (density=1e19 m⁻³, N0=3.3e16 m⁻³) ===")
 print("Te (eV):", Te_vals)
 print("Balmer-α emissivity (W/m^3):", bal_Te)

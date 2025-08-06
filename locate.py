@@ -27,6 +27,5 @@ def locate(table, value):
         ju = np.where(~mask, jm, ju)
 
     result = jl.reshape(value.shape)
-    if not ascending:
-        result = (n - 1) - result
+
     return result

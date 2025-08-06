@@ -1,6 +1,3 @@
-#
-# SigmaV_H1s_Hn3_HH.py
-#
 # Returns maxwellian averaged <sigma*v> for electron impact
 # dissociation of molecular hydrogen resulting in one H atom in
 # the 1s state and one H atom in the n=3 state.
@@ -67,4 +64,4 @@ def SigmaV_H1s_Hn3_HH(Te):
     if Te.size == 1:
         result = result[0]
 
-    return result, E0_ave, E0_min, E0_max
+    return result

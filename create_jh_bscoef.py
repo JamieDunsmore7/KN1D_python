@@ -1,5 +1,5 @@
 #
-# Create_JH_BSCoef.pro
+# Create_JH_BSCoef.py
 #
 # Creates a .npz file storing Bi-cubic spline interpolation
 # coefficients for parameters in Johnson-Hinov rate equations.
@@ -10,13 +10,11 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import bisplev
 
 def Create_JH_BSCoef(output_file='jh_bscoef.npz'):
-    # Axes
     dens = np.array([1.e10, 1.e11, 1.e12, 1.e13, 1.e14, 1.e15, 1.e16])
     temp = np.array([0.345, 0.69, 1.38, 2.76, 5.52, 11.0, 22.1, 44.1, 88.0, 176.5, 706.])
 
-    # R values (shape 7x11x2x5)
     R = np.zeros((7, 11, 2, 5))
-    # Example:
+
     R[:, :, 0, 0] = np.array([
         7.6E-6, 1.1E-5, 1.9E-5, 4.9E-5, 2.4E-4, 2.2E-3, 1.8e-2,
         1.5E-3, 1.8E-3, 2.5E-3, 4.5E-3, 1.3E-2, 7.1E-2, 3.7e-1,
@@ -158,7 +156,6 @@ def Create_JH_BSCoef(output_file='jh_bscoef.npz'):
     ]).reshape((7, 11), order='F')
 
 
-    # S and alpha (shape 7x11)
     S = np.zeros((7, 11))
     alpha = np.zeros((7, 11))
     
@@ -190,7 +187,6 @@ def Create_JH_BSCoef(output_file='jh_bscoef.npz'):
 
     alpha *= 1e-6
 
-    # A coefficients
     A_lyman = np.array([4.699E8, 5.575E7, 1.278E7, 4.125E6, 1.644E6, 7.568E5, 3.869E5,
                         2.143E5, 1.263E5, 7.834E4, 5.066E4, 3.393E4, 2.341E4, 1.657E4, 1.200E4])
     A_balmer = np.array([4.41E7, 8.42E6, 2.53E6, 9.732E5, 4.389e5, 2.215e5, 1.216e5,
@@ -200,8 +196,6 @@ def Create_JH_BSCoef(output_file='jh_bscoef.npz'):
     # Convert R to log
     log_dens = np.log(dens * 1e6)  # Convert to m^-3
     log_temp = np.log(temp)
-
-
 
     # Compute and store B-spline coefficients for R
     print('Computing B-Spline coefficients for R values')
@@ -236,17 +230,13 @@ def Create_JH_BSCoef(output_file='jh_bscoef.npz'):
 
 
     spline_S = RectBivariateSpline(log_dens, log_temp, np.log(S), kx=kx, ky=ky)
-    spline_alpha = RectBivariateSpline(log_dens, log_temp, np.log(alpha), kx=kx, ky=ky)
-    LogS_BSCoef = spline_S.tck[2].ravel()
-    LogAlpha_BSCoef = spline_alpha.tck[2].ravel()
-
     S_tx, S_ty, S_c = spline_S.tck
     S_kx, S_ky   = spline_S.degrees   # these are attributes on the spline object
-    S_full_tck = (S_tx, S_ty, S_c, S_kx, S_ky)
 
+
+    spline_alpha = RectBivariateSpline(log_dens, log_temp, np.log(alpha), kx=kx, ky=ky)
     alpha_tx, alpha_ty, alpha_c = spline_alpha.tck
     alpha_kx, alpha_ky = spline_alpha.degrees  # these are attributes on the spline object
-    alpha_full_tck = (alpha_tx, alpha_ty, alpha_c, alpha_kx, alpha_ky)
 
 
     # save the S spline full tck
@@ -276,74 +266,6 @@ def Create_JH_BSCoef(output_file='jh_bscoef.npz'):
 
     print(f'Saved data to {output_file}')
 
-    '''
-    # now read in the same output file
 
-    data = np.load(output_file, allow_pickle=True)
-
-    S_tck     = (data['S_tx'],     data['S_ty'],     data['S_c'],     int(data['S_kx']),     int(data['S_ky']))
-    alpha_tck = (data['alpha_tx'], data['alpha_ty'], data['alpha_c'], int(data['alpha_kx']), int(data['alpha_ky']))
-
-
-    #S_tck = data['S_tck']
-    #alpha_tck = data['alpha_tck']
-
-    # example density values
-    dens = np.array([10**12, 10**13, 10**14]) # in cm^-3
-    temp = np.linspace(1, 700, 1000)
-
-    log_dens = np.log(dens * 1e6)  # Convert to m^-3
-    log_temp = np.log(temp)
-
-    S_evaluated = np.exp(bisplev(log_dens, log_temp, S_tck))
-    alpha_evaluated = np.exp(bisplev(log_dens, log_temp, alpha_tck))
-
-    fig, ax = plt.subplots(figsize=(10, 7))
-    for i in range(len(dens)):
-        cx = S_evaluated[i, :]
-        plt.plot(temp, cx*1e6, label=f'Density: {dens[i]} m^-3')
-    plt.xlabel('Temperature')
-    plt.ylabel('Sigma V')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlim([1, 1000])
-    plt.ylim([10e-12, 10e-8])
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-
-    fig, ax = plt.subplots(figsize=(10, 7))
-    for i in range(len(dens)):
-        cx = alpha_evaluated[i, :]
-        plt.plot(temp, cx*1e6, label=f'Density: {dens[i]} m^-3')
-    plt.xlabel('Temperature')
-    plt.ylabel('Sigma V')
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xlim([1, 1000])
-    plt.ylim([10e-17, 10e-12])
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-
-    np.savez(
-        output_file,
-        DKnot=Dknot,
-        TKnot=Tknot,
-        order=order,
-        LogR_BSCoef=LogR_BSCoef,
-        LogS_BSCoef=LogS_BSCoef,
-        LogAlpha_BSCoef=LogAlpha_BSCoef,
-        A_lyman=A_lyman,
-        A_balmer=A_balmer,
-    )
-    
-
-    print(f'Saved data to {output_file}')
-    '''
-
-Create_JH_BSCoef()
 
 

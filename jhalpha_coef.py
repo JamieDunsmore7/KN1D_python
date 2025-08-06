@@ -1,12 +1,9 @@
-#
-# jh_alpha_coef.py
-#
 # Evaluates the recombination rate coefficient α (m^3/s) from
 # Johnson-Hinnov table 1, using bicubic spline interpolation on log-log data.
 #
 
-import sys
-sys.path.append("/Users/jamiedunsmore/Documents/MIT/Research/KN1D_Python")
+#import sys
+#sys.path.append("/Users/jamiedunsmore/Documents/MIT/Research/KN1D_Python")
 import numpy as np
 from scipy.interpolate import bisplev
 from create_jh_bscoef import Create_JH_BSCoef
@@ -65,8 +62,10 @@ def JHAlpha_Coef(Density, Te, create=False, no_null=False):
     Result = np.full_like(Density, 1.0e32)
 
     if no_null:
-        LDensity = np.clip(LDensity, tx[0], tx[-1])
-        LTe = np.clip(LTe, ty[0], ty[-1])
+        # NOTE: the upper limits of these clip values are NOT the same as in IDL
+        # because the knot locations are in slightly different places
+        LDensity = np.clip(LDensity, tx[0] + 0.001, tx[-1] - 0.001)
+        LTe = np.clip(LTe, ty[0] + 0.001, ty[-1] - 0.001)
         ok = np.arange(LDensity.size)
     else:
         mask = (

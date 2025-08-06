@@ -1,6 +1,3 @@
-#
-# SigmaV_P_H1s_HP.py
-#
 # Returns maxwellian averaged <sigma*v> for electron impact
 # dissociation of molecular hydrogen ions (H₂⁺), resulting in 
 # one proton and one H(1s) atom.
@@ -67,4 +64,4 @@ def SigmaV_P_H1s_HP(Te):
     if Te.size == 1:
         result = result[0]
 
-    return result, E0_ave, E0_min, E0_max
+    return result

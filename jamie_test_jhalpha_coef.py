@@ -1,5 +1,3 @@
-# jamie_test_jh_alpha.py
-#
 # Test and plot Johnson–Hinnov recombination α coefficients using JHAlpha_Coef.
 
 import numpy as np
@@ -31,7 +29,7 @@ plt.ylabel('α (cm³/s)')
 plt.xscale('log')
 plt.yscale('log')
 plt.xlim([0.1, 1000])
-plt.ylim([1e-16, 1e-11])   # adjust to suit your α‐range
+plt.ylim([1e-16, 1e-11])
 plt.grid(True)
 plt.legend()
 plt.title('JH Coefficient: Recombination')

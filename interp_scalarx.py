@@ -1,7 +1,7 @@
 #
 # Interp_ScalarX.py
 #
-# Interpolates 'density' profiles used by Kinetic_Neutrals.pro,
+# Interpolates profiles used by
 # Kinetic_H2.pro, Kinetic_H2.pro, and other related procedures.
 
 import numpy as np

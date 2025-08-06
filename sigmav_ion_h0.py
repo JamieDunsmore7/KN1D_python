@@ -1,6 +1,3 @@
-#
-# SigmaV_Ion_H0.py
-#
 # Returns maxwellian averaged <sigma*v> for electron impact
 # ionization of atomic hydrogen.
 # Coefficients are taken from Janev,
