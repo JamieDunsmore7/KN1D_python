@@ -6,7 +6,6 @@ The Python version has been validated against the IDL for most of the test cases
 - Read the KN1D manual: https://www-internal.psfc.mit.edu/~labombard/KN1D_Source_Info.html
 - Run the code! The best one to start with is probably `cmod_test_kn1d.py`. It reads in some inputs from a `.pkl` file for an example Alcator C-Mod case. This should give an idea of the required inputs and how to run the code. The `test_KN1D.py` script can also be used, but the input set-up is a bit more complex for this one.
 - Compare the results to the IDL version. For the C-Mod example, you just need to open IDL and navigate to the `/IDL_version` directory. Then type `.R cmod_test_kn1d.pro` and it should (hopefully!) run.
-- Explore some of the different input arguments (for example turning on and off different collisions).
 
 
 # General notes
