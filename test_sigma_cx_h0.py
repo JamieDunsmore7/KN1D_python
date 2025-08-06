@@ -67,22 +67,16 @@ def main(plot_both=True):
         # Oplot with color=4 (blue), thick=3
         ax.plot(E, sig_janev * 1e4, color='blue', linewidth=3, label='Janev et al.')
         
-        # --- Text annotations ---
         ax.text(0.15, 0.20, 'Output from python function which evaluates the CX Cross-Section using:',
                 transform=ax.transAxes, fontsize=9)
         ax.text(0.15, 0.17, 'Polynomial fit from Janev et al., "Elementary Processes..." p 250.',
                 transform=ax.transAxes, fontsize=9, color='blue')
 
-    # Add a grid for better readability
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)
-    
-    # Display the plot
+
     plt.show()
 
 
 if __name__ == '__main__':
-    # To replicate the 'if both then' part of the script, run:
     main(plot_both=True)
     
-    # To replicate the 'else' part of the script, run:
-    # main(plot_both=False)

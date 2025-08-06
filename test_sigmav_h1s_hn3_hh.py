@@ -11,7 +11,7 @@ def main_test_sigmav_h1s_hn3_hh():
     Te = 10.0 ** (-1 + (5 + np.log10(2)) * np.arange(101) / 100)
     
     # Compute <sigma v> and E0 parameters (returns in m^3/s)
-    sigv, E0_ave, E0_min, E0_max = SigmaV_H1s_Hn3_HH(Te)
+    sigv = SigmaV_H1s_Hn3_HH(Te)
     
     # --- Plot Setup ---
     fig, ax = plt.subplots(figsize=(10, 7))
@@ -37,11 +37,6 @@ def main_test_sigmav_h1s_hn3_hh():
             'Data from Janev et al., "Elementary Processes in Hydrogen-Helium Plasmas", p 259.',
             transform=ax.transAxes,
             fontsize=9)
-    
-    # Optionally print the E0 values
-    print(f"E0_min: {E0_min}")
-    print(f"E0_ave: {E0_ave}")
-    print(f"E0_max: {E0_max}")
     
     # Grid and show
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)

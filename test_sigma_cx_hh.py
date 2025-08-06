@@ -47,10 +47,7 @@ def main_test_sigma_cx_hh():
     ax.text(0.15, 0.17, 'Polynomial fit from Janev et al., "Elementary Processes in Hydrogen-Helium Plasmas", p 253.',
             transform=ax.transAxes, fontsize=9, color='blue')
 
-    # Add a grid for better readability
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)
-    
-    # Display the plot
     plt.show()
 
 

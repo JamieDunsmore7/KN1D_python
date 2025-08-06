@@ -11,7 +11,7 @@ def main_test_sigmav_h1s_h1s_hh():
     Te = 10.0 ** (-1 + (5 + np.log10(2)) * np.arange(101) / 100)
     
     # Compute <sigma v> (returns in m^3/s)
-    sigv, E0_ave, E0_min, E0_max = SigmaV_H1s_H1s_HH(Te)
+    sigv = SigmaV_H1s_H1s_HH(Te)
     
     # --- Plot Setup ---
     fig, ax = plt.subplots(figsize=(10, 7))
