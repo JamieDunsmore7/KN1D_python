@@ -64,6 +64,7 @@ KN1D(
     ReadInput=ReadInput,
     File=File,
     refine=refine,
+    plot=True
 )
 
 

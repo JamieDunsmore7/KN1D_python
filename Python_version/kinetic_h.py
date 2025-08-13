@@ -1294,7 +1294,6 @@ def kinetic_h(
                 Delta_nHG = np.max(NHG[:, igen] / np.max(nH))
 
                 if fH_iterate:
-                    print('fH iteration breakpoint')
                     # If fH 'seed' is being iterated, then do another generation until the 'generation error'
                     # is less than 0.003 times the 'seed error' or is less than TRUNCATE
                     if (Delta_nHG < 0.003 * Delta_nHs) or (Delta_nHG < truncate):
@@ -1322,9 +1321,6 @@ def kinetic_h(
                 plt.plot(x, NHG[:, i], color=colours[i % 8], label=f'Gen {i}')
             plt.legend()
             plt.show()
-
-            print('end of iteration breakpoint')
-            breakpoint()
 
 
         # Compute H density profile

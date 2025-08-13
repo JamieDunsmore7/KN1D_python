@@ -398,7 +398,6 @@ def KN1D(
             mesh_data = np.load(mesh_file, allow_pickle=True)
 
             # Compare saved mesh inputs against current inputs
-            print('breakpoint inside the file thing')
             test = 0
             if not np.array_equal(mesh_data['x_s'], x): test += 1
             if mesh_data['GaugeH2_s'].item() != GaugeH2: test += 1
@@ -760,9 +759,6 @@ def KN1D(
             ni_correct = True
             Hcompute_errors = compute_errors and Hdebrief
 
-            breakpoint()
-
-
             # call Python version of Kinetic_H
             h_results, h_seeds, h_output, h_errors, h_H2_moments, h_internal = kinetic_h(
                 # velocity & spatial grids
@@ -810,8 +806,6 @@ def KN1D(
                 h_H2_moments=h_H2_moments_common,
                 h_internal=h_internal_common
             )
-
-            breakpoint()
 
             # unpack the “real” outputs
             fH          = h_results['fH']
@@ -1057,9 +1051,6 @@ def KN1D(
             gammaxH_minus=gammaxH_minus,
             Lyman=Lyman, Balmer=Balmer
         )
-
-        breakpoint()
-
 
     if plot > 0:
         # precompute all the “mid‐point” indices in one shot

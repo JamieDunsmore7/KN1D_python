@@ -2380,7 +2380,6 @@ def kinetic_h2(
                 plt.show()
 
             # Compute Source error
-            breakpoint()
             if compute_errors:
                 if debrief > 1:
                     print(f"{prompt}Computing Source Error")
