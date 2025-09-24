@@ -13,7 +13,7 @@ The Python version has been validated against the IDL for most of the test cases
 
 - Some of these IDL scripts may be different slightly from the versions available online here: https://www-internal.psfc.mit.edu/~labombard/KN1D_Source_Info.html. This is because they are taken from Brian LaBombard's directory which is slightly more recent than the online version
 
-- Brian LaBombard's directory has some old/new versions of different scripts suffixed with '_old' and '_new'. In this repo, I haven't used any of the files suffixed with '_old' or '_new'. Any differences should be small/negligable.
+- Brian LaBombard's directory has some old/new versions of different scripts suffixed with '_old' and '_new'. In this repo, I haven't used any of the files suffixed with '_old' or '_new'. Any differences should be small/negligible.
 
 - You need an IDL licence to run the IDL version. It's also possible that you may run into some FORTRAN compliation issues due to IDL/FORTRAN version incompatibility. I will probably be of limited help in trying to fix these issues, but if you come across an error like this and know how to fix it then please tell me!
 
