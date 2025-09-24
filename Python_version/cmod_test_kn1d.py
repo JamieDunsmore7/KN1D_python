@@ -17,7 +17,7 @@ d_pipe = input_data['d_pipe']
 lc = input_data['lc']
 mu = input_data['mu']
 n_e = input_data['n_e'] * 1e20  # Convert from 1e20m^-3 to 1e20 m^-3
-p_wall = input_data['p_wall']
+p_wall = input_data['p_wall'] #mTorr
 t_e = input_data['t_e'] * 1000 # Convert from keV to eV
 t_i = input_data['t_i'] * 1000 # Convert from keV to eV
 vx = input_data['vx']
@@ -64,7 +64,7 @@ KN1D(
     ReadInput=ReadInput,
     File=File,
     refine=refine,
-    plot=True
+    plot=False
 )
 
 

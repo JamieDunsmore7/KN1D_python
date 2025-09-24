@@ -235,8 +235,11 @@ def KN1D(
         if GaugeH2 > 30.0:
             fctr *= 30.0 / GaugeH2
 
+        # NOTE: only for high resolution runs
+        #E0_in_atom = [0.3, 1.0, 2.0, 3.0, 3.5, 4.0, 5.0]
 
-        kinetic_h_mesh = Create_Kinetic_H_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=fctr)
+
+        kinetic_h_mesh = Create_Kinetic_H_Mesh(nv, mu, x, Ti, Te, n, PipeDia, fctr=fctr, E0_in=None)
 
 
         xH = kinetic_h_mesh['xH']
@@ -651,7 +654,7 @@ def KN1D(
 
             # NOTE: I haven't yet incorporated the warn kwarg into Interp_fVrVxX
             warn = 5e-3
-            fHM = Interp_fVrVxX(fH, vrA, vxA, xH, TnormA,vrM, vxM, xH2, TnormM,debug=interp_debug, correct=True)
+            fHM = Interp_fVrVxX(fH, vrA, vxA, xH, TnormA,vrM, vxM, xH2, TnormM,debug=interp_debug, correct=False)
 
             # 10.2) Compute fH2 on the H2 mesh via your Python Kinetic_H2
             ni_correct = True
@@ -745,8 +748,8 @@ def KN1D(
 
             # Interpolate H2 data onto H mesh: fH2 -> fH2A, fSH -> fSHA, nHP -> nHPA, THP -> THPA
             warn = 5e-3
-            fH2A = Interp_fVrVxX(fa=fH2, vra=vrM, vxa=vxM, xa=xH2, Tnorma=TnormM,vrb=vrA, vxb=vxA, xb=xH,   Tnormb=TnormA,debug=interp_debug, correct=True)
-            fSHA = Interp_fVrVxX(fa=fSH, vra=vrM, vxa=vxM, xa=xH2, Tnorma=TnormM,vrb=vrA, vxb=vxA, xb=xH,   Tnormb=TnormA,debug=interp_debug, correct=True)
+            fH2A = Interp_fVrVxX(fa=fH2, vra=vrM, vxa=vxM, xa=xH2, Tnorma=TnormM,vrb=vrA, vxb=vxA, xb=xH,   Tnormb=TnormA,debug=interp_debug, correct=False)
+            fSHA = Interp_fVrVxX(fa=fSH, vra=vrM, vxa=vxM, xa=xH2, Tnorma=TnormM,vrb=vrA, vxb=vxA, xb=xH,   Tnormb=TnormA,debug=interp_debug, correct=False)
 
             # 3) scalar profiles nHP, THP → nHPA, THPA on the H‐grid
             nHPA  = interp_scalarx(nHP,  xH2, xH, warn=warn, debug=interp_debug)
